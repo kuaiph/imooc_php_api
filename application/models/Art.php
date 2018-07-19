@@ -8,12 +8,11 @@
 class ArtModel {
     public $errno  = 0;
     public $errmsg = '';
-    private $_db   = null;
+    private $_dao   = null;
 
     public function __construct() {
-        $this->_db = new PDO("mysql:host=localhost;dbname=imooc_yaf;","root","root");
+        $this->_dao = new Db_Art();
         //防止pdo在拼接sql的时候将int转string
-        $this->_db->setAttribute(PDO::ATTR_EMULATE_PREPARES,false);
     }
 
     /**
@@ -28,23 +27,17 @@ class ArtModel {
     public function add($title, $contents, $author, $cate, $artId=0) {
         $isEdit = false;
         if( $artId != 0 && is_numeric($artId)) {
-            $query = $this->_db->prepare("select count(*) from `art` where `id` = ?");
-            $query->execute(array($artId));
-            $ret = $query->fetchAll();
-            if(!$ret||count($ret)!=1) {
-                $this->errno = -2004;
-                $this->errmsg= "找不到文章,请确认是否有该文章";
+            if(!$this->_dao->findArt($artId=0)){
+                $this->errno = $this->_dao->errno();
+                $this->errno = $this->_dao->errmsg();
                 return false;
             }
             $isEdit = true;
         } else {
             //检测分类是否存在
-            $query = $this->_db->prepare("select count(*) from `cate` where `id` = ?");
-            $query->execute(array($cate));
-            $ret = $query->fetchAll();
-            if(!$ret||$ret[0][0]==0) {
-                $this->errno = -2005;
-                $this->errmsg= "找不到 ".$cate."分类信息";
+            if(!$this->_dao->findCate($cate)){
+                $this->errno = $this->_dao->errno();
+                $this->errno = $this->_dao->errmsg();
                 return false;
             }
         }
@@ -54,29 +47,18 @@ class ArtModel {
          */
 
         $data = array($title,$contents,$author,intval($cate));
-        if( !$isEdit ){
-            $query = $this->_db->prepare("insert into `art` (`title`,`contents`,`author`,`cate`) VALUES(?,?,?,?)");
 
-        } else {
-            $query = $this->_db->prepare("update `art` set `title`=?,`contents`=?,`author`=?,`cate`=? where `id`=? ");
-            $data[] = $artId;
-        }
-        $ret = $query->execute($data);
-        if(!$ret) {
-            $this->errno  = -2006;
-            $this->errmsg = "操作文章数据表失败,errinfo:".end($query->errorInfo());
+        if(!($lastid = $this->_dao->modify($data,$isEdit,$artId))){
+            $this->errno = $this->_dao->errno();
+            $this->errno = $this->_dao->errmsg();
             return false;
+        }else{
+            /**
+             * 返回文章最后的id值
+             */
+            return $lastid;
         }
 
-        /**
-         * 返回文章最后的id值
-         */
-
-        if(!$isEdit){
-            return intval($this->_db->lastInsertId());
-        } else {
-            return intval($artId);
-        }
     }
 
     /**
@@ -85,13 +67,11 @@ class ArtModel {
      * @return bool
      */
     public function del($artId) {
-        $query = $this->_db->prepare("delete from `art` where `id`=?");
-        $ret = $query->execute(array($artId));
-        if( !$ret ) {
-            $this->errno  = -2007;
-            $this->errmsg = "删除数据失败".end($query->errorInfo());
+        if(!$this->_dao->del($artId)){
+            $this->errno = $this->_dao->errno();
+            $this->errno = $this->_dao->errmsg();
             return false;
-         }
+        }
         return true;
     }
 
@@ -102,11 +82,9 @@ class ArtModel {
      * @return bool
      */
     public function status($artId, $status="offline") {
-        $query = $this->_db->prepare("update `art` set `status` = ? where `id` = ?" );
-        $ret   = $query->execute(array($status,intval($artId)));
-        if( !$ret ) {
-            $this->errno  = -2008;
-            $this->errmsg = "更新文章状态失败".end($query->errorInfo());
+        if(!$this->_dao->status($artId,$status)){
+            $this->errno = $this->_dao->errno();
+            $this->errno = $this->_dao->errmsg();
             return false;
         }
         return true;
@@ -118,28 +96,11 @@ class ArtModel {
      * @return array|bool
      */
     public function get($artId) {
-        $query  = $this->_db->prepare("select `title`, `contents`, `author`, `cate`,`ctime`,`mtime`,`status` from `art` where `id` = ?");
-        $status = $query->execute(array(intval($artId)));
-        $ret    = $query->fetchAll();
-        if( !$status || !$ret ){
-            $this->errno  = -2009;
-            $this->errmsg = "查询失败".end($query->errorInfo());
+        if(!($artInfo = $this->_dao->getArt($artId))){
+            $this->errno = $this->_dao->errno();
+            $this->errno = $this->_dao->errmsg();
             return false;
         }
-        $artInfo = $ret[0];
-
-        /**
-         * 获取分类信息
-         */
-        $query = $this->_db->prepare("select `name` from `cate` where `id`=?");
-        $query->execute(array($artInfo['cate']));
-        $ret   = $query->fetchAll();
-        if( !$ret ) {
-            $this->errno  = -2010;
-            $this->errmsg = "获取分类信息失败".end($query->errorInfo());
-            return false;
-        }
-        $artInfo['cateName'] = $ret['0']['name'];
         $data = array(
             'id'       =>  intval($artId),
             'title'    =>  $artInfo['title'],
@@ -162,23 +123,11 @@ class ArtModel {
      * @param string $status
      * @return array|bool
      */
-    public function list($pageNo=0, $pageSize=10, $cate=1, $status="online") {
+    public function listArt($pageNo=0, $pageSize=10, $cate=1, $status="online") {
         $start = $pageNo * $pageSize +($pageNo==0?0:1);
-        if($cate == 0){
-            $filter = array($status, intval($start),intval($pageSize));
-            $query = $this->_db->prepare("select `id`, `title`, `contents`, `author`, `cate`, `ctime`, `mtime`,
- `status` from `art` where `status`= ? order by `ctime` desc limit ?, ?");
-        }else{
-            $filter = array($cate, $status, intval($start), intval($pageSize) );
-            $query = $this->_db->prepare("select `id`, `title`, `contents`, `author`, `cate`,`ctime`, `mtime`,
-            `status` from `art` where `cate` = ? and `status` = ? order by `ctime` desc limit ?,?");
-        }
-        //$query->bindValue('limit', (int) $start, PDO::PARAM_INT);
-        $stat = $query->execute($filter);
-        $ret  = $query->fetchAll();
-        if( !$ret ){
-            $this->errno  = -2011;
-            $this->errmsg = "获取文章列表失败, errinfo";
+        if(!$ret = $this->_dao->getListArt($start,$status,$pageSize,$cate=1)){
+            $this->errno = $this->_dao->errno();
+            $this->errno = $this->_dao->errmsg();
             return false;
         }
 
@@ -192,12 +141,11 @@ class ArtModel {
             if( isset($cateInfo[$item['cate']]) ){
                 $cateName = $cateInfo[$item['cate']];
             } else {
-                $query = $this->_db->prepare("select `name` from `cate` where `id` =? ");
-                $query->execute(array($item['cate']));
-                $retCate = $query->fetchAll();
-                if( !$retCate ){
-                    $this->errno  = -2010;
-                    $this->errmsg =  "获取文章分类信息失败， err".end($query->errorInfo());
+
+                if(!($retCate = $this->_dao->findCate($item['item']))){
+                    $this->errno = $this->_dao->errno();
+                    $this->errno = $this->_dao->errmsg();
+                    return false;
                 }
                 $cateName = $cateInfo[$item['cate']] = $retCate[0]['name'];
             }

@@ -136,7 +136,7 @@ class ArtController extends Yaf_Controller_Abstract {
         $status   = Common_Request::getRequest("status","online");
 
         $model = new ArtModel();
-        if( $data = $model->list($pageNo, $pageSize, $cate, $status) ){
+        if( $data = $model->listArt($pageNo, $pageSize, $cate, $status) ){
             echo Common_Request::response(0,'',$data);
         } else {
             echo Common_Request::response($model->errno, $model->errmsg);

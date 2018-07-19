@@ -53,7 +53,7 @@ class UserModel{
             $this->errmsg = "密码太短，请输入最低8位的密码";
             return false;
         } else {
-            $password = $this->_generatepassword($pwd);
+            $password = Common_Password::pwdEncode($pwd);
         }
 
         $query = $this->_db->prepare("insert into `user` (`id`,`name`,`pwd`,`reg_time`) VALUES (null,?,?,?)");
@@ -76,7 +76,7 @@ class UserModel{
             return false;
         }
         $userInfo = $ret[0];
-        if( $userInfo['pwd'] != $this->_generatepassword($pwd) ) {
+        if( $userInfo['pwd'] != Common_Password::pwdEncode($pwd) ) {
             $this->errno = -1004;
             $this->errmsg= "密码错误";
             return false;
@@ -84,13 +84,5 @@ class UserModel{
         return intval($userInfo[1]);
     }
 
-    /**
-     * 密码生成
-     * @param $pwd
-     * @return string
-     */
-    public function _generatepassword($pwd)
-    {
-        return md5("salt-xxxxxxxxx-".$pwd);
-    }
+
 }

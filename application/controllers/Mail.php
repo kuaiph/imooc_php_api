@@ -7,42 +7,26 @@
 class MailController extends Yaf_Controller_Abstract {
 
     public function sendAction(){
-        $submit = $this->getRequest()->getQuery("submit","0");
+        $submit = Common_Request::getRequest("submit","0");
         if($submit != "1"){
-            echo json_encode(
-                array(
-                    "errno" => -3001,
-                    "errmsg" => "请通过正常渠道提交",
-                ));
+            echo Common_Request::response(-3001,"请通过正常渠道提交");
             return false;
         }
 
-        $uid      = $this->getRequest()->getPost("uid", false);
-        $title    = $this->getRequest()->getPost("title", false);
-        $contents = $this->getRequest()->getPost("contents", false);
+        $uid      = Common_Request::postRequest("uid",false);
+        $title    = Common_Request::postRequest("title", false);
+        $contents = Common_Request::postRequest("contents", false);
 
         if( !$uid || !$title || !$contents ){
-            echo json_encode(
-                array(
-                    "errno"  => -3002,
-                    "errmsg" => "用户id，邮件title，邮件内容不能为空",
-                ));
+            echo Common_Request::response(-3002,"用户id，邮件title，邮件内容不能为空");
             return false;
         }
 
         $model = new MailModel();
         if($model->send(intval($uid),trim($title), trim($contents))){
-            echo json_encode(
-                array(
-                    "errno" => 0,
-                    "errmsg"=> "",
-                ));
+            echo Common_Request::response();
         } else {
-            echo json_encode(
-                array(
-                    "errno" => $model->errno,
-                    "errmsg"=> $model->errmsg,
-                ));
+            echo Common_Request::response($model->errno, $model->errmsg);
             return false;
         }
         return false;

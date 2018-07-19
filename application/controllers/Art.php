@@ -15,53 +15,31 @@ class ArtController extends Yaf_Controller_Abstract {
 
     public function addAction($artId=0) {
         if( !$this->_isAdmin() ) {
-            echo json_encode(
-                array(
-                    "errno"  => -2000,
-                    "errmsg" => "需要管理员权限",
-            ));
+            echo Common_Request::response(-2000,"需要管理员权限");
             return false;
         }
-
-        $submit = $this->getRequest()->getQuery("submit","0");
+        $submit = Common_Request::getRequest("submit","0");
         if( $submit != "1" ) {
-            echo json_encode(
-                array(
-                    "errno"  => -2001,
-                    "errmsg" => "请通过正常渠道提交",
-                ));
+            echo Common_Request::response(-2001,"请通过正常渠道提交");
             return false;
         }
 
-        $title     = $this->getRequest()->getPost("title",false);
-        $contents  = $this->getRequest()->getPost("contents",false);
-        $author    = $this->getRequest()->getPost("author",false);
-        $cate      = $this->getRequest()->getPost("cate",false);
+        $title     = Common_Request::postRequest("title",false);
+        $contents  = Common_Request::postRequest("contents",false);
+        $author    = Common_Request::postRequest("author",false);
+        $cate      = Common_Request::postRequest("cate",false);
 
         if( !$title || !$contents || !$author || !$cate ) {
-            echo json_encode(
-                array(
-                    "errno"  => -2002,
-                    "errmsg" => "没填写完整",
-            ));
+            echo Common_Request::response(-2002,"没填写完整");
             return false;
         }
 
         $model = new ArtModel();
         if( $lastId = $model->add( trim($title), trim($contents), trim($author), trim($cate), $artId)) {
-            echo json_encode(
-                array(
-                    "errno"  => 0,
-                    "errmsg" => '',
-                    "data"   => array("lastId"=>$lastId),
-                ));
+            echo Common_Request::response(0,'',array("lastId"=>$lastId));
             return false;
         } else {
-            echo json_encode(
-                array(
-                    "errno"  => $model->errno,
-                    "errmsg" => $model->errmsg,
-                ));
+            echo Common_Request::response($model->errno,$model->errmsg);
             return false;
         }
 
@@ -70,21 +48,14 @@ class ArtController extends Yaf_Controller_Abstract {
 
     public function editAction() {
         if( !$this->_isAdmin() ){
-            echo json_encode(array(
-                "errno"  => -2000,
-                "errmsg" => "需要管理员权限",
-            ));
+            echo Common_Request::response(-2000,"需要管理员权限");
             return false;
         }
-        $artId = $this->getRequest()->getQuery("artId","0");
+        $artId = Common_Request::getRequest("artId","0");
         if( is_numeric($artId) && $artId ) {
             return $this->addAction($artId);
         } else {
-            echo json_encode(
-                array(
-                    "errno"  => -2003,
-                    "errmsg" => "缺少必要的参数",
-                ));
+            echo Common_Request::response(-2003,"缺少必要的参数");
             return false;
         }
 
@@ -96,35 +67,19 @@ class ArtController extends Yaf_Controller_Abstract {
      */
     public function delAction() {
         if( !$this->_isAdmin() ){
-            echo json_encode(
-                array(
-                    "errno"  => -2000,
-                    "errmsg" => "需要管理员权限",
-                ));
+            echo Common_Request::response(-2000,"需要管理员权限");
             return false;
         }
-        $artId = $this->getRequest()->getQuery("artId","0");
+        $artId = Common_Request::getRequest("artId","0");
         if( is_numeric($artId) && $artId ) {
             $model = new ArtModel();
             if( $model->del( $artId ) ) {
-                echo json_encode(
-                    array(
-                        "errno"  => 0,
-                        "errmsg" => "",
-                    ));
+                echo Common_Request::response();
             } else {
-                echo json_encode(
-                    array(
-                        "errno"  => $model->errno,
-                        "errmsg" => $model->errmsg,
-                    ));
+                echo Common_Request::response($model->errno, $model->errmsg);
             }
         } else {
-            echo json_encode(
-                array(
-                    "errno"  => -2003,
-                    "errmsg" => "缺少必要的参数",
-                ));
+            echo Common_Request::response(-2003,"缺少必要的参数");
         }
         return false;
     }
@@ -135,36 +90,20 @@ class ArtController extends Yaf_Controller_Abstract {
      */
     public function statusAction() {
         if( !$this->_isAdmin() ) {
-            echo json_encode(
-                array(
-                    "errno"  => -2000,
-                    "errmsg" => "需要管理员权限",
-                ));
+            echo Common_Request::response(-2000,"需要管理员权限");
             return false;
         }
-        $artId  = $this->getRequest()->getQuery("artId","0");
-        $status = $this->getRequest()->getQuery("status","offline");
+        $artId  = Common_Request::getRequest("artId","0");
+        $status = Common_Request::getRequest("status","offline");
         if( is_numeric($artId)  && $artId ) {
             $model = new ArtModel();
             if( $model->status($artId, $status) ){
-                echo json_encode(
-                    array(
-                        "errno"  => 0,
-                        "errmsg" => "",
-                    ));
+                echo Common_Request::response();
             } else {
-                echo json_encode(
-                    array(
-                        "errno"  => $model->errno,
-                        "errmsg" => $model->errmsg,
-                    ));
+                echo Common_Request::response($model->errno,$model->errmsg);
             }
         } else {
-            echo json_encode(
-                array(
-                    "errno"  => -2003,
-                    "errmsg" => "缺少必要的参数",
-                ));
+            echo Common_Request::response(-2003,"缺少必要的参数");
         }
         return false;
     }
@@ -174,55 +113,33 @@ class ArtController extends Yaf_Controller_Abstract {
      * @return bool
      */
     public function getAction() {
-        $artId = $this->getRequest()->getQuery("artId","0");
+        $artId = Common_Request::getRequest("artId","0");
         if( is_numeric($artId)  && $artId ) {
             $model = new ArtModel();
             if( $data = $model->get($artId) ) {
-                echo json_encode(
-                    array(
-                        "errno"  => 0,
-                        "errmsg" => "",
-                        "data"   => $data,
-                    ));
+                echo Common_Request::response(0,'',$data);
             } else {
-                echo json_encode(
-                    array(
-                        "errno"  => $model->errno,
-                        "errmsg" => $model->errmsg,
-                    ));
+                echo Common_Request::response($model->errno, $model->errmsg);
 
             }
         } else {
-            echo json_encode(
-                array(
-                    "errno"  => -2007,
-                    "errmsg" => "缺少必要的ID参数",
-                ));
+            echo Common_Request::response(-2007,"缺少必要的ID参数");
         }
         return false;
     }
 
 
     public function listAction() {
-        $pageNo   = $this->getRequest()->getQuery("pageNo","0");
-        $pageSize = $this->getRequest()->getQuery("pageSize","10");
-        $cate     = $this->getRequest()->getQuery("cate","0");
-        $status   = $this->getRequest()->getQuery("status","online");
+        $pageNo   = Common_Request::getRequest("pageNo","0");
+        $pageSize = Common_Request::getRequest("pageSize","10");
+        $cate     = Common_Request::getRequest("cate","0");
+        $status   = Common_Request::getRequest("status","online");
 
         $model = new ArtModel();
         if( $data = $model->list($pageNo, $pageSize, $cate, $status) ){
-            echo json_encode(
-                array(
-                    "errno" => 0,
-                    "errmsg"=> "",
-                    "data"  => $data,
-                ));
+            echo Common_Request::response(0,'',$data);
         } else {
-            echo json_encode(
-                array(
-                    "errno" => $model->errno,
-                    "errmsg"=> $model->errmsg,
-                ));
+            echo Common_Request::response($model->errno, $model->errmsg);
         }
         return false;
     }

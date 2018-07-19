@@ -1,7 +1,39 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: joe
- * Date: 18/07/2018
- * Time: 2:31 PM
- */
+
+
+class Common_Request{
+    public static function request($key, $default=null,$type=null){
+        if( $type == 'get'){
+            $result = isset($_GET[$key])?trim($_GET[$key]):null;
+        } elseif ($type == 'post'){
+            $result = isset($_POST[$key])?trim($_POST[$key]):null;
+        } else {
+            $result = isset($_REQUEST[$key])?trim($_REQUEST[$key]):null;
+        }
+
+        if($default != null && $result==null){
+            $result = $default;
+        }
+        return $result;
+    }
+
+    public static function getRequest($key, $default=null){
+        return self::request($key,$default,'get');
+    }
+
+    public static function postRequest($key, $default=null){
+        return self::request($key, $default, 'post');
+    }
+
+    public static function response($errno=0, $errmsg='', $data=null){
+        $resp = array(
+            "errno" => $errno,
+            "errmsg"=> $errmsg,
+        );
+
+        if($data != null){
+            $resp['data'] = $data;
+        }
+        return json_encode($resp);
+    }
+}

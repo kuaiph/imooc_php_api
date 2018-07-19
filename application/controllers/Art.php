@@ -15,12 +15,12 @@ class ArtController extends Yaf_Controller_Abstract {
 
     public function addAction($artId=0) {
         if( !$this->_isAdmin() ) {
-            echo Common_Request::response(-2000,"需要管理员权限");
+            echo Common_Request::response(-2000);
             return false;
         }
         $submit = Common_Request::getRequest("submit","0");
         if( $submit != "1" ) {
-            echo Common_Request::response(-2001,"请通过正常渠道提交");
+            echo Common_Request::response(-2001);
             return false;
         }
 
@@ -30,16 +30,16 @@ class ArtController extends Yaf_Controller_Abstract {
         $cate      = Common_Request::postRequest("cate",false);
 
         if( !$title || !$contents || !$author || !$cate ) {
-            echo Common_Request::response(-2002,"没填写完整");
+            echo Common_Request::response(-2002);
             return false;
         }
 
         $model = new ArtModel();
         if( $lastId = $model->add( trim($title), trim($contents), trim($author), trim($cate), $artId)) {
-            echo Common_Request::response(0,'',array("lastId"=>$lastId));
+            echo Common_Request::response(0,array("lastId"=>$lastId));
             return false;
         } else {
-            echo Common_Request::response($model->errno,$model->errmsg);
+            echo Common_Request::response($model->errno);
             return false;
         }
 
@@ -48,7 +48,7 @@ class ArtController extends Yaf_Controller_Abstract {
 
     public function editAction() {
         if( !$this->_isAdmin() ){
-            echo Common_Request::response(-2000,"需要管理员权限");
+            echo Common_Request::response(-2000);
             return false;
         }
         $artId = Common_Request::getRequest("artId","0");
@@ -76,10 +76,10 @@ class ArtController extends Yaf_Controller_Abstract {
             if( $model->del( $artId ) ) {
                 echo Common_Request::response();
             } else {
-                echo Common_Request::response($model->errno, $model->errmsg);
+                echo Common_Request::response($model->errno);
             }
         } else {
-            echo Common_Request::response(-2003,"缺少必要的参数");
+            echo Common_Request::response(-2003);
         }
         return false;
     }
@@ -90,7 +90,7 @@ class ArtController extends Yaf_Controller_Abstract {
      */
     public function statusAction() {
         if( !$this->_isAdmin() ) {
-            echo Common_Request::response(-2000,"需要管理员权限");
+            echo Common_Request::response(-2000);
             return false;
         }
         $artId  = Common_Request::getRequest("artId","0");
@@ -100,10 +100,10 @@ class ArtController extends Yaf_Controller_Abstract {
             if( $model->status($artId, $status) ){
                 echo Common_Request::response();
             } else {
-                echo Common_Request::response($model->errno,$model->errmsg);
+                echo Common_Request::response($model->errno);
             }
         } else {
-            echo Common_Request::response(-2003,"缺少必要的参数");
+            echo Common_Request::response(-2003);
         }
         return false;
     }
@@ -117,13 +117,13 @@ class ArtController extends Yaf_Controller_Abstract {
         if( is_numeric($artId)  && $artId ) {
             $model = new ArtModel();
             if( $data = $model->get($artId) ) {
-                echo Common_Request::response(0,'',$data);
+                echo Common_Request::response(0,$data);
             } else {
-                echo Common_Request::response($model->errno, $model->errmsg);
+                echo Common_Request::response($model->errno);
 
             }
         } else {
-            echo Common_Request::response(-2007,"缺少必要的ID参数");
+            echo Common_Request::response(-2007);
         }
         return false;
     }
@@ -137,9 +137,9 @@ class ArtController extends Yaf_Controller_Abstract {
 
         $model = new ArtModel();
         if( $data = $model->listArt($pageNo, $pageSize, $cate, $status) ){
-            echo Common_Request::response(0,'',$data);
+            echo Common_Request::response(0,$data);
         } else {
-            echo Common_Request::response($model->errno, $model->errmsg);
+            echo Common_Request::response($model->errno);
         }
         return false;
     }

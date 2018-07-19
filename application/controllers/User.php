@@ -20,7 +20,7 @@ class UserController extends Yaf_Controller_Abstract {
     public function loginAction(){
         $submit = Common_Request::getRequest("submit","0");
         if( $submit != "1") {
-            echo Common_Request::response(-1001,"请通过正常渠道提交");
+            echo json_encode(Err_Map::get(1001));
             return false;
         }
 
@@ -28,7 +28,7 @@ class UserController extends Yaf_Controller_Abstract {
         $uname = Common_Request::postRequest("uname",false);
         $pwd   = Common_Request::postRequest("pwd",false);
         if( !$uname || !$pwd ) {
-            echo Common_Request::response(-1002,"用户名或密码不能为空");
+            echo json_encode(Err_Map::get(1002));
             return false;
         }
 
@@ -44,7 +44,7 @@ class UserController extends Yaf_Controller_Abstract {
             echo Common_Request::response(0,'',$uname);
         } else {
 
-            echo Common_Request::response($model->errno,$model->errmsg);
+            echo Common_Request::response($model->errno);
         }
         return false;
     }
@@ -58,7 +58,7 @@ class UserController extends Yaf_Controller_Abstract {
 		$uname = Common_Request::postRequest("uname",false);
 		$pwd   = Common_Request::postRequest("pwd",false);
 		if( !$uname || !$pwd ) {
-		    echo Common_Request::response(-1002, "用户名或密码不能为空");
+		    echo json_encode(Err_Map::get(1002));
 		    return false;
         }
 
@@ -67,7 +67,7 @@ class UserController extends Yaf_Controller_Abstract {
 		if( $model->register(trim($uname),trim($pwd)) ){
 		    echo Common_Request::response(0,'',$uname);
         } else {
-            echo Common_Request::response($model->errno,$model->errmsg);
+            echo Common_Request::response($model->errno);
         }
 
 

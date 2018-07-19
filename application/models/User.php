@@ -31,8 +31,7 @@ class UserModel{
 
         $password = "";
         if( strlen($pwd) < 8 ){
-            $this->errno = -1006;
-            $this->errmsg = "密码太短，请输入最低8位的密码";
+            list($this->errno,$this->errmsg) = Err_Map::get(-1006);
             return false;
         } else {
             $password = Common_Password::pwdEncode($pwd);

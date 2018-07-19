@@ -25,11 +25,8 @@ class Common_Request{
         return self::request($key, $default, 'post');
     }
 
-    public static function response($errno=0, $errmsg='', $data=null){
-        $resp = array(
-            "errno" => $errno,
-            "errmsg"=> $errmsg,
-        );
+    public static function response($errno=0,$data=null){
+        $resp = Err_Map::get($errno);
 
         if($data != null){
             $resp['data'] = $data;

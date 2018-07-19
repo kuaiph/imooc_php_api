@@ -6,8 +6,7 @@ class Db_Art extends Db_Base {
             $query->execute(array($artId));
             $ret = $query->fetchAll();
             if(!$ret||count($ret)!=1) {
-                self::$errno = -2004;
-                self::$errmsg= "找不到文章,请确认是否有该文章";
+                list(self::$errno, self::$errmsg) = Err_Map::get(-2004);
                 return false;
             }
         return true;
@@ -18,8 +17,8 @@ class Db_Art extends Db_Base {
         $query->execute(array($cate));
         $ret = $query->fetchAll();
         if(!$ret||$ret[0][0]==0) {
-            self::$errno = -2005;
-            self::$errmsg= "找不到 ".$cate."分类信息";
+            list(self::$errno,self::$errmsg) = Err_Map::get(-2005);
+            self::$errmsg .= $cate;
             return false;
         }
         return $ret;
@@ -35,8 +34,7 @@ class Db_Art extends Db_Base {
         }
         $ret = $query->execute($data);
         if(!$ret) {
-            self::$errno  = -2006;
-            self::$errmsg = "操作文章数据表失败,errinfo:".end($query->errorInfo());
+            list(self::$errno, self::$errmsg) = Err_Map::get(-2006);
             return false;
         }
         if(!$isEdit){
@@ -50,8 +48,8 @@ class Db_Art extends Db_Base {
         $query = self::getDb()->prepare("delete from `art` where `id`=?");
         $ret = $query->execute(array($artId));
         if( !$ret ) {
-            self::$errno  = -2007;
-            self::$errmsg = "删除数据失败".end($query->errorInfo());
+            list(self::$errno,self::$errmsg) = Err_Map::get(-2012);
+            self::$errmsg .= end($query->errorInfo());
             return false;
         }
         return true;
@@ -61,8 +59,8 @@ class Db_Art extends Db_Base {
         $query = self::getDb()->prepare("update `art` set `status` = ? where `id` = ?" );
         $ret   = $query->execute(array($status,intval($artId)));
         if( !$ret ) {
-            self::$errno  = -2008;
-            self::$errmsg = "更新文章状态失败".end($query->errorInfo());
+            list(self::$errno,self::$errmsg) = Err_Map::get(-2008);
+            self::$errmsg .= end($query->errorInfo());
             return false;
         }
         return true;
@@ -73,8 +71,8 @@ class Db_Art extends Db_Base {
         $status = $query->execute(array(intval($artId)));
         $ret    = $query->fetchAll();
         if( !$status || !$ret ){
-            self::$errno  = -2009;
-            self::$errmsg = "查询失败".end($query->errorInfo());
+            list(self::$errno,self::$errmsg) = Err_Map::get(-2009);
+            self::$errmsg .= end($query->errorInfo());
             return false;
         }
         $artInfo = $ret[0];
@@ -86,8 +84,8 @@ class Db_Art extends Db_Base {
         $query->execute(array($artInfo['cate']));
         $ret   = $query->fetchAll();
         if( !$ret ) {
-            self::$errno  = -2010;
-            self::$errmsg = "获取分类信息失败".end($query->errorInfo());
+            list(self::$errno,self::$errmsg) = Err_Map::get(-2010);
+            self::$errmsg .= end($query->errorInfo());
             return false;
         }
         $artInfo['cateName'] = $ret['0']['name'];
@@ -108,8 +106,7 @@ class Db_Art extends Db_Base {
         $stat = $query->execute($filter);
         $ret  = $query->fetchAll();
         if( !$ret ){
-            self::$errno  = -2011;
-            self::$errmsg = "获取文章列表失败, errinfo";
+            list(self::$errno,self::$errmsg) = Err_Map::get(-2011);
             return false;
         }
         return $ret;

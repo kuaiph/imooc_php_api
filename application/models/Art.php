@@ -29,7 +29,7 @@ class ArtModel {
         if( $artId != 0 && is_numeric($artId)) {
             if(!$this->_dao->findArt($artId=0)){
                 $this->errno = $this->_dao->errno();
-                $this->errno = $this->_dao->errmsg();
+                $this->errmsg = $this->_dao->errmsg();
                 return false;
             }
             $isEdit = true;
@@ -37,7 +37,7 @@ class ArtModel {
             //检测分类是否存在
             if(!$this->_dao->findCate($cate)){
                 $this->errno = $this->_dao->errno();
-                $this->errno = $this->_dao->errmsg();
+                $this->errmsg = $this->_dao->errmsg();
                 return false;
             }
         }
@@ -50,7 +50,7 @@ class ArtModel {
 
         if(!($lastid = $this->_dao->modify($data,$isEdit,$artId))){
             $this->errno = $this->_dao->errno();
-            $this->errno = $this->_dao->errmsg();
+            $this->errmsg = $this->_dao->errmsg();
             return false;
         }else{
             /**
@@ -69,7 +69,7 @@ class ArtModel {
     public function del($artId) {
         if(!$this->_dao->del($artId)){
             $this->errno = $this->_dao->errno();
-            $this->errno = $this->_dao->errmsg();
+            $this->errmsg = $this->_dao->errmsg();
             return false;
         }
         return true;
@@ -84,7 +84,7 @@ class ArtModel {
     public function status($artId, $status="offline") {
         if(!$this->_dao->status($artId,$status)){
             $this->errno = $this->_dao->errno();
-            $this->errno = $this->_dao->errmsg();
+            $this->errmsg = $this->_dao->errmsg();
             return false;
         }
         return true;
@@ -98,7 +98,7 @@ class ArtModel {
     public function get($artId) {
         if(!($artInfo = $this->_dao->getArt($artId))){
             $this->errno = $this->_dao->errno();
-            $this->errno = $this->_dao->errmsg();
+            $this->errmsg = $this->_dao->errmsg();
             return false;
         }
         $data = array(
@@ -127,7 +127,7 @@ class ArtModel {
         $start = $pageNo * $pageSize +($pageNo==0?0:1);
         if(!$ret = $this->_dao->getListArt($start,$status,$pageSize,$cate=1)){
             $this->errno = $this->_dao->errno();
-            $this->errno = $this->_dao->errmsg();
+            $this->errmsg = $this->_dao->errmsg();
             return false;
         }
 
@@ -142,9 +142,9 @@ class ArtModel {
                 $cateName = $cateInfo[$item['cate']];
             } else {
 
-                if(!($retCate = $this->_dao->findCate($item['item']))){
+                if(!($retCate = $this->_dao->findCate($item['cate']))){
                     $this->errno = $this->_dao->errno();
-                    $this->errno = $this->_dao->errmsg();
+                    $this->errmsg = $this->_dao->errmsg();
                     return false;
                 }
                 $cateName = $cateInfo[$item['cate']] = $retCate[0]['name'];

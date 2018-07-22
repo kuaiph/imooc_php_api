@@ -9,15 +9,18 @@ class UserModel{
 
     public $errno  = 0;
     public $errmsg = "";
+    //protected static $_db   = null;
+
     private $_dao = null;
+
     public function __construct(){
         $this->_dao = new Db_User();
     }
     /**
      * 注册
-     * @param string $uname 用户名
-     * @param string $pwd 密码
-     * @return bool 注册成功或失败
+     * @param $uname
+     * @param $pwd
+     * @return bool
      */
     public function register($uname, $pwd){
         if(!$this->_dao->checkExists($uname)){
@@ -42,13 +45,6 @@ class UserModel{
         return true;
     }
 
-    /**
-     * 登录
-     * @param string $uname 用户名
-     * @param string $pwd 密码
-     * @return mixed
-     */
-
     public function login($uname, $pwd) {
         $userInfo = $this->_dao->find($uname);
         if(!$userInfo){
@@ -56,7 +52,8 @@ class UserModel{
             $this->errmsg= $this->_dao->errmsg();
         }
         if( $userInfo['pwd'] != Common_Password::pwdEncode($pwd) ) {
-            list($this->errno,$this->errmsg) = Err_Map::get(-1004);
+            $this->errno = -1004;
+            $this->errmsg= "密码错误";
             return false;
         }
         return intval($userInfo[1]);

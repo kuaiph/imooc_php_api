@@ -9,18 +9,20 @@ class ArtModel {
     public $errno  = 0;
     public $errmsg = '';
     private $_dao   = null;
+
     public function __construct() {
         $this->_dao = new Db_Art();
+        //防止pdo在拼接sql的时候将int转string
     }
 
     /**
      * 文章添加model
-     * @param string $title    文章标题
-     * @param string $contents 文章内容
-     * @param string $author   作者
-     * @param int    $cate     分类
-     * @param int    $artId    文章ID
-     * @return mixed
+     * @param $title
+     * @param $contents
+     * @param $author
+     * @param $cate
+     * @param int $artId
+     * @return bool|int
      */
     public function add($title, $contents, $author, $cate, $artId=0) {
         $isEdit = false;
@@ -61,9 +63,8 @@ class ArtModel {
 
     /**
      * 删除数据
-     * 根据文章ID删除文章
-     * @param string $artId 文章ID
-     * @return bool 删除成功与否
+     * @param $artId
+     * @return bool
      */
     public function del($artId) {
         if(!$this->_dao->del($artId)){
@@ -76,8 +77,8 @@ class ArtModel {
 
     /**
      * 更改状态
-     * @param int $artId 文章ID
-     * @param string $status 文章状态
+     * @param $artId
+     * @param string $status
      * @return bool
      */
     public function status($artId, $status="offline") {
@@ -91,9 +92,8 @@ class ArtModel {
 
     /**
      * 文章信息获取
-     * 通过文章id获取文章信息
-     * @param int $artId 文章ID
-     * @return mixed
+     * @param $artId
+     * @return array|bool
      */
     public function get($artId) {
         if(!($artInfo = $this->_dao->getArt($artId))){
@@ -117,10 +117,10 @@ class ArtModel {
 
     /**
      * 文章分类信息获取-分页
-     * @param int $pageNo      第几页
-     * @param int $pageSize    分页大小
-     * @param int $cate        分类
-     * @param string $status   文章状态
+     * @param int $pageNo
+     * @param int $pageSize
+     * @param int $cate
+     * @param string $status
      * @return array|bool
      */
     public function listArt($pageNo=0, $pageSize=10, $cate=1, $status="online") {

@@ -6,15 +6,13 @@
  * @desc 文章控制器
  */
 class ArtController extends Yaf_Controller_Abstract {
+
+
     public function indexAction(){
         return $this->listAction();
     }
 
-    /**
-     * 添加文章
-     * @param int $artId
-     * @return bool
-     */
+
     public function addAction($artId=0) {
         if( !$this->_isAdmin() ) {
             echo Common_Request::response(-2000);
@@ -130,11 +128,7 @@ class ArtController extends Yaf_Controller_Abstract {
         return false;
     }
 
-    /**
-     * 获取文章信息
-     * 获取文章信息-分页
-     * @return bool
-     */
+
     public function listAction() {
         $pageNo   = Common_Request::getRequest("pageNo","0");
         $pageSize = Common_Request::getRequest("pageSize","10");
@@ -150,11 +144,7 @@ class ArtController extends Yaf_Controller_Abstract {
         return false;
     }
 
-    /**
-     * 判断是否是管理员
-     * 这里简单处理了下
-     * @return bool
-     */
+
     private function _isAdmin() {
         return true;
     }

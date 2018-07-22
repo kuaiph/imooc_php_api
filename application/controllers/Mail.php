@@ -9,7 +9,7 @@ class MailController extends Yaf_Controller_Abstract {
     public function sendAction(){
         $submit = Common_Request::getRequest("submit","0");
         if($submit != "1"){
-            echo Common_Request::response(-3001,"请通过正常渠道提交");
+            echo Common_Request::response(-3001);
             return false;
         }
 
@@ -18,7 +18,7 @@ class MailController extends Yaf_Controller_Abstract {
         $contents = Common_Request::postRequest("contents", false);
 
         if( !$uid || !$title || !$contents ){
-            echo Common_Request::response(-3002,"用户id，邮件title，邮件内容不能为空");
+            echo Common_Request::response(-3002);
             return false;
         }
 
@@ -26,7 +26,7 @@ class MailController extends Yaf_Controller_Abstract {
         if($model->send(intval($uid),trim($title), trim($contents))){
             echo Common_Request::response();
         } else {
-            echo Common_Request::response($model->errno, $model->errmsg);
+            echo Common_Request::response($model->errno);
             return false;
         }
         return false;

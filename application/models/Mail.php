@@ -31,15 +31,13 @@ class MailModel{
         $query->execute(array(intval($uid)));
         $ret = $query->fetchAll();
         if(!$ret || count($ret) != 1){
-            $this->errno = -3003;
-            $this->errmsg = "邮箱信息查找失败";
+            list($this->errno,$this->errmsg) = Err_Map::get(-3003);
             return false;
         }
 
         $userEmail = $ret[0]['email'];
         if( !filter_var($userEmail, FILTER_VALIDATE_EMAIL)){
-            $this->errno = -3004;
-            $this->errmsg = "邮箱不合法".$userEmail;
+            list($this->errno,$this->errmsg) = Err_Map::get(-3004);
             return false;
         }
 

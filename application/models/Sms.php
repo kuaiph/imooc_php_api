@@ -20,8 +20,8 @@ class SmsModel{
 
     /**
      * 验证码发送
-     * @param $uid
-     * @param $contents
+     * @param int $uid  用户ID
+     * @param string $contents  内容
      * @return bool
      */
     public function send($uid,$contents){
@@ -29,14 +29,12 @@ class SmsModel{
         $query->execute(array($uid));
         $ret = $query->fetchAll();
         if(!$ret || count($ret)!=1){
-            $this->errno = -4003;
-            $this->errmsg = "用户手机号信息查找失败";
+            list($this->errno,$this->errmsg) = Err_Map::get(-4003);
         }
 
         $userMobile = $ret['0']['mobile'];
         if( !$userMobile || !is_numeric($userMobile)||strlen($userMobile)!=11 ){
-            $this->errno = -4004;
-            $this->errmsg= "手机号不符合规定";
+            list($this->errno,$this->errmsg) = Err_Map::get(-4003);
         }
 
         $code = rand(1000,9999);
@@ -46,14 +44,13 @@ class SmsModel{
             $query = $this->_db->prepare("insert into `sms_record` (`uid`,`contents`) values(?,?)");
             $ret   = $query->execute(array($uid,json_encode(array('code'=>$code))));
             if(!$ret){
-                $this->errno = -4006;
-                $this->errmsg= "消息发送成功，数据插入失败";
+                list($this->errno,$this->errmsg) = Err_Map::get(-4006);
                 return false;
             }
             return true;
         } else {
-            $this->errno = -4005;
-            $this->errmsg= "发送失败".$result->Code;
+            list($this->errno,$this->errmsg) = Err_Map::get(-4005);
+            $this->errmsg .= $result->Code;
             return false;
         }
         return true;

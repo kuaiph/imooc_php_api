@@ -33,42 +33,42 @@ class WxpayModel extends WxPayNotify {
         $query->execute(array($itemid));
         $ret = $query->fetchAll();
         if( !$ret || count($ret)!=1 ){
-            $this->errno  = -6004;
-            $this->errmsg = "找不到这件商品";
+            list($this->errno,$this->errmsg) = Err_Map::get(-6004);
             return false;
         }
 
         $item = $ret['0'];
         if(strtotime($item['etime']) <= time()){
-            $this->errno  = -6005;
-            $this->errmsg = "商品过期";
+            list($this->errno,$this->errmsg) = Err_Map::get(-6005);
             return false;
         }
         if(intval($item['stock'])<=0){
-            $this->errno  = -6006;
-            $this->errmsg = "商品没有库存";
+            list($this->errno,$this->errmsg) = Err_Map::get(-6006);
             return false;
         }
 
         //创建bill
+        try {
+             $this->_db->beginTransaction();
+             $query = $this->_db->prepare("insert into `bill` (`itemid`,`uid`,`price`,`status`) VALUES (?,?,?,'unpaid') ");
+             $ret = $query->execute(array($itemid, $uid, intval($item['price'])));
+             if(!$ret){
+                 list($this->errno,$this->errmsg) = Err_Map::get(-6007);
+                 return false;
+             }
 
-        $query = $this->_db->prepare("insert into `bill` (`itemid`,`uid`,`price`,`status`) VALUES (?,?,?,'unpaid') ");
-        $ret = $query->execute(array($itemid, $uid, intval($item['price'])));
-        if(!$ret){
-            $this->errno  = -6007;
-            $this->errmsg = "创建订单失败";
-            return false;
-        }
+             $lastid = intval($this->_db->lastInsertId());
 
-        $lastid = intval($this->_db->lastInsertId());
+             //更新库存
 
-        //更新库存
-
-        $query = $this->_db->prepare("update `item` set `stock`=`stock`-1 where `id`= ?");
-        $ret = $query->execute(array($itemid));
-        if(!$ret){
-            $this->errno  = -6008;
-            $this->errmsg = "更新库存失败";
+             $query = $this->_db->prepare("update `item` set `stock`=`stock`-1 where `id`= ?");
+             $ret = $query->execute(array($itemid));
+             if(!$ret){
+                 list($this->errno,$this->errmsg) = Err_Map::get(-6008);
+             }
+             $this->_db->commit();
+        }catch(PDOException $e){
+            $this->_db->rollback();
         }
 
         return $lastid;
@@ -86,8 +86,7 @@ class WxpayModel extends WxPayNotify {
         $query->execute(array($billid));
         $ret = $query->fetchAll();
         if( !$ret || count($ret)!=1 ){
-            $this->errno  = -6011;
-            $this->errmsg = "找不到订单信息";
+            list($this->errno,$this->errmsg) = Err_Map::get(-6011);
             return false;
         }
 
@@ -96,8 +95,7 @@ class WxpayModel extends WxPayNotify {
         $query->execute(array($bill['itemid']));
         $ret = $query->fetchAll();
         if( !$ret || count($ret) !=1 ){
-            $this->errno  = -6012;
-            $this->errmsg = "找不到商品信息";
+            list($this->errno,$this->errmsg) = Err_Map::get(-6012);
             return false;
         }
 
